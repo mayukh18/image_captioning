@@ -53,7 +53,7 @@ def main():
     #    word_map = json.load(j)
         
         
-    with open("./vocab.pkl", "rb") as f:
+    with open("/content/image_captioning/Image-Captioning-Codebase/vocab.pkl", "rb") as f:
         vocab = pickle.load(f)
         
     word_map = vocab.word2idx
@@ -114,11 +114,11 @@ def main():
         batch_size=batch_size, shuffle=True, num_workers=workers, pin_memory=True)
     """
     train_loader = torch.utils.data.DataLoader(
-        Flickr8kDataset(annot_path="../data/Flickr_Data/Flickr_TextData/", img_path="../data/Flickr_Data/Images/", \
+        Flickr8kDataset(annot_path="/content/", img_path="/content/Flicker8k_Dataset/", \
                             split="train", transform=transform_train), \
                             batch_size=batch_size, shuffle=True, num_workers=workers, pin_memory=True)
     val_loader = torch.utils.data.DataLoader(
-        Flickr8kDataset(annot_path="../data/Flickr_Data/Flickr_TextData/", img_path="../data/Flickr_Data/Images/", \
+        Flickr8kDataset(annot_path="/content/", img_path="/content/Flicker8k_Dataset/", \
                             split="dev", transform=transform_train), \
                             batch_size=batch_size, shuffle=True, num_workers=workers, pin_memory=True)
     

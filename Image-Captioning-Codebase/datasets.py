@@ -144,11 +144,11 @@ class Flickr8kDataset(Dataset):
             caption.extend([self.vocab(token) for token in tokens])
             caption.append(self.vocab(self.vocab.end_word))
             
-            caption.extend([self.vocab(self.vocab.end_word) for i in range(len(caption), 37)])
+            caption.extend([self.vocab(self.vocab.end_word) for i in range(len(caption), 42)])
             
             caption = torch.Tensor(caption).long()
             
-            caplen = torch.LongTensor([37])
+            caplen = torch.LongTensor([42])
             return image, caption, caplen
 
         # obtain image if in test mode
@@ -172,13 +172,13 @@ class Flickr8kDataset(Dataset):
                 caption.append(self.vocab(self.vocab.start_word))
                 caption.extend([self.vocab(token) for token in tokens])
                 caption.append(self.vocab(self.vocab.end_word))
-                caption.extend([self.vocab(self.vocab.end_word) for i in range(len(caption), 37)])
+                caption.extend([self.vocab(self.vocab.end_word) for i in range(len(caption), 42)])
                 
                 all_captions.append(caption)
             
             caption = random.choice(all_captions)
             caption = torch.Tensor(caption).long()
-            caplen = torch.LongTensor([37])
+            caplen = torch.LongTensor([42])
             
             all_captions = torch.Tensor(all_captions).long()
             
