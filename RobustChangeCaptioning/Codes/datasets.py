@@ -29,10 +29,10 @@ class CaptionDataset(Dataset):
         caption = [0] + [self.word_map[w] for w in caption.split(" ")] + [1]
         caption = caption + [2 for _ in range(40 - len(caption))]
 
-        img1 = torch.from_numpy(cv2.imread(os.path.join(self.data_folder, 'resized_images', img_id + ".png"))).permute(
-            2, 0, 1)
+        img1 = torch.from_numpy(
+            cv2.imread(os.path.join(self.data_folder, 'resized_images', img_id + ".png"))).float().permute(2, 0, 1)
         img2 = torch.from_numpy(
-            cv2.imread(os.path.join(self.data_folder, 'resized_images', img_id + "_2.png"))).permute(2, 0, 1)
+            cv2.imread(os.path.join(self.data_folder, 'resized_images', img_id + "_2.png"))).float().permute(2, 0, 1)
 
         caplen = torch.LongTensor(len(caption))
         caption = torch.LongTensor(caption)

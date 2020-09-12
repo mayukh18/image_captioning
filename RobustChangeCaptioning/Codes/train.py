@@ -146,7 +146,7 @@ def train(train_loader, net, encoder, decoder, criterion, encoder_optimizer, dec
         im2_enc = net(imgs2)
 
         # Forward prop.
-        l_bef, l_aft, alpha_bef, alpha_aft = encoder(imgs1, imgs2)
+        l_bef, l_aft, alpha_bef, alpha_aft = encoder(im1_enc, im2_enc)
         scores, caps_sorted, decode_lengths, alphas, sort_ind = decoder(l_bef, l_aft, caps, caplens)
 
         targets = caps_sorted[:, 1:]
