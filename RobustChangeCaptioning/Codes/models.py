@@ -154,7 +154,7 @@ class DynamicSpeaker(nn.Module):
         predictions = torch.zeros(batch_size, np.max(decode_lengths), self.vocab_size).to(device)
         alphas = torch.zeros(batch_size, np.max(decode_lengths), 3).to(device)  # TODO  ## is three ok?
 
-        for t in range(max(decode_lengths)):
+        for t in range(np.max(decode_lengths)):
             batch_size_t = sum([l > t for l in decode_lengths])
 
             u_t = torch.cat([l_total[:batch_size_t], h_ds[:batch_size_t]], dim=1)

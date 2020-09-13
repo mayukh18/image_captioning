@@ -27,7 +27,7 @@ class CaptionDataset(Dataset):
         caption = data['sentences'][0]
 
         caption = [0] + [self.word_map[w] for w in caption.split(" ")] + [1]
-        caption = caption + [2 for _ in range(40 - len(caption))]
+        caption = caption + [2 for _ in range(42 - len(caption))]
 
         img1 = torch.from_numpy(
             cv2.imread(os.path.join(self.data_folder, 'resized_images', img_id + ".png"))).float().permute(2, 0, 1)

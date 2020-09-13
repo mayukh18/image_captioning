@@ -23,7 +23,7 @@ dropout = 0.5
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 cudnn.benchmark = True
 captions_per_image = 5
-feature_dim = 1024
+feature_dim = 2048
 
 # Training parameters
 start_epoch = 0
