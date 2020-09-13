@@ -1,6 +1,7 @@
 import torch
 from torch import nn
 from torchvision import models
+import numpy as np
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -9,7 +10,7 @@ class ImNet(nn.Module):
 
     def __init__(self):
         super(ImNet, self).__init__()
-        model = models.resnet101(pretrained=True)
+        model = models.resnet50(pretrained=True)
         self.model = nn.Sequential(*list(model.children())[:-2])
         # print(self.model)
 
@@ -64,8 +65,8 @@ class DualAttention(nn.Module):
         # alpha_img1, alpha_img2 have dimension
         # (batch_size, 1, h, w)
 
-        img_feat1 = img_feat1 * (alpha_img1.repeat(1, 1024, 1, 1))
-        img_feat2 = img_feat2 * (alpha_img2.repeat(1, 1024, 1, 1))
+        img_feat1 = img_feat1 * (alpha_img1.repeat(1, 2048, 1, 1))
+        img_feat2 = img_feat2 * (alpha_img2.repeat(1, 2048, 1, 1))
 
         # (batch_size,feature_dim,h,w)
 
@@ -132,7 +133,7 @@ class DynamicSpeaker(nn.Module):
         l_total = self.relu(self.wd1(l_total))  # (batch_size, hidden_dim)
 
         # Sort input data by decreasing lengths
-        caption_lengths, sort_ind = caption_lengths.squeeze(1).sort(dim=0, descending=True)
+        caption_lengths, sort_ind = caption_lengths.sort(dim=0, descending=True)
         l_diff = l_diff[sort_ind]
         l_total = l_total[sort_ind]
         l_bef = l_bef[sort_ind]
@@ -150,8 +151,8 @@ class DynamicSpeaker(nn.Module):
 
         decode_lengths = (caption_lengths - 1).tolist()
 
-        predictions = torch.zeros(batch_size, max(decode_lengths), self.vocab_size).to(device)
-        alphas = torch.zeros(batch_size, max(decode_lengths), 3).to(device)  # TODO  ## is three ok?
+        predictions = torch.zeros(batch_size, np.max(decode_lengths), self.vocab_size).to(device)
+        alphas = torch.zeros(batch_size, np.max(decode_lengths), 3).to(device)  # TODO  ## is three ok?
 
         for t in range(max(decode_lengths)):
             batch_size_t = sum([l > t for l in decode_lengths])

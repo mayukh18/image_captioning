@@ -34,7 +34,7 @@ class CaptionDataset(Dataset):
         img2 = torch.from_numpy(
             cv2.imread(os.path.join(self.data_folder, 'resized_images', img_id + "_2.png"))).float().permute(2, 0, 1)
 
-        caplen = torch.LongTensor(len(caption))
+        caplen = len(caption)
         caption = torch.LongTensor(caption)
 
         if self.split is 'train':
@@ -44,7 +44,6 @@ class CaptionDataset(Dataset):
             return img1, img2, caption, caplen, all_captions
         elif self.split is 'test':
             all_captions = torch.LongTensor(data['sentences'])
-
             return img1, img2, caption, caplen, all_captions
 
     def __len__(self):

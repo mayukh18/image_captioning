@@ -5,6 +5,7 @@ unzip Flickr8k_Dataset.zip
 unzip Flickr8k_text.zip
 
 
+pip install gdown
 gdown https://drive.google.com/uc?id=1OVb4_3Uec_xbyUk90aWC6LFpKsIOtR7v
 unzip resized_images.zip
 
