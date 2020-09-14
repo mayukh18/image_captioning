@@ -76,7 +76,7 @@ def main(args):
         batch_size=batch_size, shuffle=False, num_workers=workers, pin_memory=True)
 
     val_loader = torch.utils.data.DataLoader(
-        CaptionDataset(args.data_folder, word_map, 'train'),
+        CaptionDataset(args.data_folder, word_map, 'val'),
         batch_size=batch_size, shuffle=False, num_workers=workers, pin_memory=True)
 
     # Epochs
@@ -101,6 +101,7 @@ def main(args):
 
         # One epoch's validation
         recent_bleu4 = validate(val_loader=val_loader,
+                                net=net,
                                 encoder=encoder,
                                 decoder=decoder,
                                 criterion=criterion,
@@ -192,7 +193,8 @@ def train(train_loader, net, encoder, decoder, criterion, encoder_optimizer, dec
                                                                           top3=top3accs))
 
 
-def validate(val_loader, encoder, decoder, criterion, word_map):
+def validate(val_loader, net, encoder, decoder, criterion, word_map):
+    net.eval()
     encoder.eval()
     decoder.eval()
 
@@ -213,8 +215,11 @@ def validate(val_loader, encoder, decoder, criterion, word_map):
             caps = caps.to(device)
             caplens = caplens.to(device)
 
+            im1_enc = net(imgs1)
+            im2_enc = net(imgs2)
+
             # Forward prop.
-            l_bef, l_aft, alpha_bef, alpha_aft = encoder(imgs1, imgs2)
+            l_bef, l_aft, alpha_bef, alpha_aft = encoder(im1_enc, im2_enc)
             scores, caps_sorted, decode_lengths, alphas, sort_ind = decoder(l_bef, l_aft, caps, caplens)
 
             targets = caps_sorted[:, 1:]

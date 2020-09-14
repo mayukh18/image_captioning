@@ -27,7 +27,7 @@ class CaptionDataset(Dataset):
         caption = data['sentences'][0]
 
         caption = [0] + [self.word_map[w] for w in caption.split(" ")] + [1]
-        caption = caption + [2 for _ in range(42 - len(caption))]
+        caption = caption + [2 for _ in range(62 - len(caption))]
 
         img1 = torch.from_numpy(
             cv2.imread(os.path.join(self.data_folder, 'resized_images', img_id + ".png"))).float().permute(2, 0, 1)
@@ -37,14 +37,23 @@ class CaptionDataset(Dataset):
         caplen = len(caption)
         caption = torch.LongTensor(caption)
 
+        all_captions = []
         if self.split is 'train':
             return img1, img2, caption, caplen
         elif self.split is 'val':
-            all_captions = torch.LongTensor(data['sentences'])
-            return img1, img2, caption, caplen, all_captions
+            for cap in data['sentences']:
+                cap = [0] + [self.word_map[w] for w in cap.split(" ")] + [1]
+                cap = cap + [2 for _ in range(62 - len(cap))]
+                all_captions.append(cap)
+            print("val", len(all_captions))
+            return img1, img2, caption, caplen, torch.LongTensor([all_captions[:1]])
         elif self.split is 'test':
-            all_captions = torch.LongTensor(data['sentences'])
-            return img1, img2, caption, caplen, all_captions
+            for cap in data['sentences']:
+                cap = [0] + [self.word_map[w] for w in cap.split(" ")] + [1]
+                cap = cap + [2 for _ in range(62 - len(cap))]
+                all_captions.append(cap)
+            # all_captions = torch.LongTensor(data['sentences'])
+            return img1, img2, caption, caplen, torch.LongTensor([all_captions[:1]])
 
     def __len__(self):
         return len(self.captions)
