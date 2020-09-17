@@ -45,15 +45,14 @@ class CaptionDataset(Dataset):
                 cap = [0] + [self.word_map[w] for w in cap.split(" ")] + [1]
                 cap = cap + [2 for _ in range(62 - len(cap))]
                 all_captions.append(cap)
-            print("val", len(all_captions))
-            return img1, img2, caption, caplen, torch.LongTensor([all_captions[:1]])
+            return img1, img2, caption, caplen, torch.LongTensor(all_captions[:1])
         elif self.split is 'test':
             for cap in data['sentences']:
                 cap = [0] + [self.word_map[w] for w in cap.split(" ")] + [1]
                 cap = cap + [2 for _ in range(62 - len(cap))]
                 all_captions.append(cap)
             # all_captions = torch.LongTensor(data['sentences'])
-            return img1, img2, caption, caplen, torch.LongTensor([all_captions[:1]])
+            return img1, img2, caption, caplen, torch.LongTensor(all_captions[:1])
 
     def __len__(self):
         return len(self.captions)

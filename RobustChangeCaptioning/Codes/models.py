@@ -15,9 +15,9 @@ class ImNet(nn.Module):
         # print(self.model)
 
     def forward(self, img):
-        print(img.size())
+        #print(img.size())
         out = self.model(img)
-        print(out.size())
+        #print(out.size())
         return out
 
 

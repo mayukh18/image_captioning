@@ -30,6 +30,7 @@ start_epoch = 0
 epochs_since_improvement = 0
 batch_size = 64
 workers = 1
+net_lr = 1e-4
 decoder_lr = 1e-4
 encoder_lr = 1e-4
 grap_clip = 5.
@@ -63,6 +64,8 @@ def main(args):
 
     net = ImNet().to(device)
 
+    net_optimizer = torch.optim.Adam(params=filter(lambda p: p.requires_grad, net.parameters()),
+                                         lr=net_lr)
     encoder_optimizer = torch.optim.Adam(params=filter(lambda p: p.requires_grad, decoder.parameters()),
                                          lr=encoder_lr)
 
@@ -85,6 +88,7 @@ def main(args):
         print("epoch : " + str(epoch))
 
         if epochs_since_improvement > 0 and epochs_since_improvement % 8 == 0:
+            adjust_learning_rate(net_optimizer, 0.8)
             adjust_learning_rate(encoder_optimizer, 0.8)
             adjust_learning_rate(decoder_optimizer, 0.8)
 
@@ -93,6 +97,7 @@ def main(args):
               encoder=encoder,
               decoder=decoder,
               criterion=criterion,
+              net_optimizer=net_optimizer,
               encoder_optimizer=encoder_optimizer,
               decoder_optimizer=decoder_optimizer,
               epoch=epoch,
@@ -117,11 +122,11 @@ def main(args):
             epochs_since_improvement = 0
 
         # Save checkpoint
-        save_checkpoint(args.root_dir, data_name, epoch, epochs_since_improvement, encoder, decoder, encoder_optimizer,
+        save_checkpoint(args.root_dir, data_name, epoch, epochs_since_improvement, net, encoder, decoder, net_optimizer, encoder_optimizer,
                         decoder_optimizer, recent_bleu4, is_best)
 
 
-def train(train_loader, net, encoder, decoder, criterion, encoder_optimizer, decoder_optimizer, epoch, word_map):
+def train(train_loader, net, encoder, decoder, criterion, net_optimizer, encoder_optimizer, decoder_optimizer, epoch, word_map):
     encoder.train()
     decoder.train()
     net.train()
@@ -161,6 +166,7 @@ def train(train_loader, net, encoder, decoder, criterion, encoder_optimizer, dec
         # Add doubly stochastic attention regularization
 
         # Back prop.
+        net_optimizer.zero_grad()
         encoder_optimizer.zero_grad()
         decoder_optimizer.zero_grad()
         loss.backward()
@@ -169,6 +175,7 @@ def train(train_loader, net, encoder, decoder, criterion, encoder_optimizer, dec
         # Grad_clip ??
 
         # Update weights
+        net_optimizer.step()
         encoder_optimizer.step()
         decoder_optimizer.step()
 

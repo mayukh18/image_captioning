@@ -255,12 +255,14 @@ def load_embeddings(emb_file, word_map):
 
   return embeddings, emb_dim
 
-def save_checkpoint(root_dir, data_name, epoch, epochs_since_improvement, encoder, decoder, encoder_optimizer, decoder_optimizer, bleu4, is_best):
+def save_checkpoint(root_dir, data_name, epoch, epochs_since_improvement, net, encoder, decoder, net_optimizer, encoder_optimizer, decoder_optimizer, bleu4, is_best):
   state = {'epoch': epoch,
            'epochs_since_improvement': epochs_since_improvement,
            'bleu-4': bleu4,
+           'net':net,
            'encoder':encoder,
            'decoder':decoder,
+           'net_optimizer': net_optimizer,
            'encoder_optimizer': encoder_optimizer,
            'decoder_optimizer': decoder_optimizer}
 
