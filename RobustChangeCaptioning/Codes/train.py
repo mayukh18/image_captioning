@@ -272,28 +272,28 @@ def validate(val_loader, net, encoder, decoder, criterion, word_map):
             preds = temp_preds
             hypotheses.extend(preds)
 
-            assert len(references) == len(hypotheses)
+        assert len(references) == len(hypotheses)
 
-            weights1 = (1.0, 0.0, 0.0, 0.0)
-            weights2 = (0.5, 0.5, 0.0, 0.0)
-            weights3 = (0.33, 0.33, 0.33, 0.0)
-            weights4 = (0.25, 0.25, 0.25, 0.25)
+        weights1 = (1.0, 0.0, 0.0, 0.0)
+        weights2 = (0.5, 0.5, 0.0, 0.0)
+        weights3 = (0.33, 0.33, 0.33, 0.0)
+        weights4 = (0.25, 0.25, 0.25, 0.25)
 
-            bleu1 = corpus_bleu(references, hypotheses, weights1)
-            bleu2 = corpus_bleu(references, hypotheses, weights2)
-            bleu3 = corpus_bleu(references, hypotheses, weights3)
-            bleu4 = corpus_bleu(references, hypotheses, weights4)
+        bleu1 = corpus_bleu(references, hypotheses, weights1)
+        bleu2 = corpus_bleu(references, hypotheses, weights2)
+        bleu3 = corpus_bleu(references, hypotheses, weights3)
+        bleu4 = corpus_bleu(references, hypotheses, weights4)
 
-            print(
-                '\n * LOSS - {loss.avg:.3f}, TOP-3 ACCURACY - {top3.avg:.3f}, BLEU-1 - {bleu11}, BLEU-2 - {bleu22}, BLEU-3 - {bleu33}, BLEU-4 - {bleu44},\n'.format(
-                    loss=losses,
-                    top3=top3accs,
-                    bleu11=bleu1,
-                    bleu22=bleu2,
-                    bleu33=bleu3,
-                    bleu44=bleu4, ))
+        print(
+            '\n * LOSS - {loss.avg:.3f}, TOP-3 ACCURACY - {top3.avg:.3f}, BLEU-1 - {bleu11}, BLEU-2 - {bleu22}, BLEU-3 - {bleu33}, BLEU-4 - {bleu44},\n'.format(
+                loss=losses,
+                top3=top3accs,
+                bleu11=bleu1,
+                bleu22=bleu2,
+                bleu33=bleu3,
+                bleu44=bleu4, ))
 
-            return bleu4
+        return bleu4
 
 
 if __name__ == '__main__':
