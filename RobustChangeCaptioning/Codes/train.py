@@ -19,8 +19,9 @@ data_name = '3dcc_5_cap_per_img_0_min_word_freq'
 # Model parameters
 embed_dim = 512
 decoder_dim = 512
-dropout = 0.5
+dropout = 0.1
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# device = "cpu"
 cudnn.benchmark = True
 captions_per_image = 5
 feature_dim = 2048
@@ -28,15 +29,15 @@ feature_dim = 2048
 # Training parameters
 start_epoch = 0
 epochs_since_improvement = 0
-batch_size = 64
-workers = 1
+batch_size = 32
+workers = 4
 net_lr = 1e-4
 decoder_lr = 1e-4
 encoder_lr = 1e-4
-grap_clip = 5.
+grap_clip = 6.
 alpha_c = 1.
 best_bleu4 = 0.
-print_freq = 100
+print_freq = 500
 checkpoint = None
 
 
@@ -58,14 +59,14 @@ def main(args):
 
     decoder = DynamicSpeaker(feature_dim=feature_dim,
                              embed_dim=embed_dim,
-                             vocab_size=len(word_map),
+                             vocab_size=len(word_map) + 3,
                              hidden_dim=args.hidden_dim,
                              dropout=dropout).to(device)
 
     net = ImNet().to(device)
 
     net_optimizer = torch.optim.Adam(params=filter(lambda p: p.requires_grad, net.parameters()),
-                                         lr=net_lr)
+                                     lr=net_lr)
     encoder_optimizer = torch.optim.Adam(params=filter(lambda p: p.requires_grad, decoder.parameters()),
                                          lr=encoder_lr)
 
@@ -80,7 +81,7 @@ def main(args):
 
     val_loader = torch.utils.data.DataLoader(
         CaptionDataset(args.data_folder, word_map, 'val'),
-        batch_size=batch_size, shuffle=False, num_workers=workers, pin_memory=True)
+        batch_size=1, shuffle=False, num_workers=workers, pin_memory=True)
 
     # Epochs
 
@@ -122,11 +123,13 @@ def main(args):
             epochs_since_improvement = 0
 
         # Save checkpoint
-        save_checkpoint(args.root_dir, data_name, epoch, epochs_since_improvement, net, encoder, decoder, net_optimizer, encoder_optimizer,
+        save_checkpoint(args.root_dir, data_name, epoch, epochs_since_improvement, net, encoder, decoder, net_optimizer,
+                        encoder_optimizer,
                         decoder_optimizer, recent_bleu4, is_best)
 
 
-def train(train_loader, net, encoder, decoder, criterion, net_optimizer, encoder_optimizer, decoder_optimizer, epoch, word_map):
+def train(train_loader, net, encoder, decoder, criterion, net_optimizer, encoder_optimizer, decoder_optimizer, epoch,
+          word_map):
     encoder.train()
     decoder.train()
     net.train()
@@ -217,6 +220,7 @@ def validate(val_loader, net, encoder, decoder, criterion, word_map):
     with torch.no_grad():
         # Batches
         for i, (imgs1, imgs2, caps, caplens, allcaps) in enumerate(val_loader):
+
             imgs1 = imgs1.to(device)
             imgs2 = imgs2.to(device)
             caps = caps.to(device)
@@ -260,7 +264,7 @@ def validate(val_loader, net, encoder, decoder, criterion, word_map):
             for j in range(allcaps.shape[0]):
                 img_caps = allcaps[j].tolist()
                 img_captions = list(
-                    map(lambda c: [w for w in c if w not in {word_map['<start>'], word_map['<pad>']}], img_caps))
+                    map(lambda c: [w for w in c if w not in [0, 1, 2]], img_caps))
                 references.append(img_captions)
 
             # Hypotheses
@@ -299,7 +303,7 @@ def validate(val_loader, net, encoder, decoder, criterion, word_map):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--data_folder', default='/content/')
+    parser.add_argument('--data_folder', default='/workspace/workspace/image_captioning')
     parser.add_argument('--root_dir', default='./')
     parser.add_argument('--epochs', type=int, default=42)
     parser.add_argument('--hidden_dim', type=int, default=512)

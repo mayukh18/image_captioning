@@ -19,6 +19,7 @@ class CaptionDataset(Dataset):
 
         self.data_folder = data_folder
         self.dataset_size = len(self.captions)
+        # print("WORD MAP", self.word_map)
 
     def __getitem__(self, i):
 
@@ -26,7 +27,7 @@ class CaptionDataset(Dataset):
         img_id = data['img_id']
         caption = data['sentences'][0]
 
-        caption = [0] + [self.word_map[w] for w in caption.split(" ")] + [1]
+        caption = [0] + [self.word_map[w] if w in self.word_map else 2 for w in caption.split(" ")] + [1]
         caption = caption + [2 for _ in range(62 - len(caption))]
 
         img1 = torch.from_numpy(
@@ -45,14 +46,14 @@ class CaptionDataset(Dataset):
                 cap = [0] + [self.word_map[w] for w in cap.split(" ")] + [1]
                 cap = cap + [2 for _ in range(62 - len(cap))]
                 all_captions.append(cap)
-            return img1, img2, caption, caplen, torch.LongTensor(all_captions[:1])
+            return img1, img2, caption, caplen, torch.LongTensor(all_captions)
         elif self.split is 'test':
             for cap in data['sentences']:
-                cap = [0] + [self.word_map[w] for w in cap.split(" ")] + [1]
+                cap = [0] + [self.word_map[w] if w in self.word_map else 2 for w in cap.split(" ")] + [1]
                 cap = cap + [2 for _ in range(62 - len(cap))]
                 all_captions.append(cap)
             # all_captions = torch.LongTensor(data['sentences'])
-            return img1, img2, caption, caplen, torch.LongTensor(all_captions[:1])
+            return img1, img2, caption, caplen, torch.LongTensor(all_captions)
 
     def __len__(self):
         return len(self.captions)
