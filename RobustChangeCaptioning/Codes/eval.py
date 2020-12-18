@@ -10,6 +10,9 @@ import json
 
 import argparse
 
+# ---------------------------------------------------------------------------- #
+
+
 # Parameters
 
 data_name = '3dcc_5_cap_per_img_0_min_word_freq'  # base name shared by data files
@@ -63,7 +66,7 @@ def evaluate(args, beam_size, n_gram):
     # DataLoader
     loader = torch.utils.data.DataLoader(
         CaptionDataset(args.data_folder, word_map, 'test'),
-        batch_size=batch_size, shuffle=False, num_workers=4, pin_memory=True)
+        batch_size=batch_size, shuffle=False, num_workers=1, pin_memory=True)
     # TODO: Batched Beam Search
     # Therefore, do not use a batch_size greater than 1 - IMPORTANT
     # Lists to store references (true captions), and hypothesis (prediction) for each image
@@ -75,6 +78,8 @@ def evaluate(args, beam_size, n_gram):
     ddd = 0
     for i, (image1, image2, caps, caplens, allcaps) in enumerate(
             tqdm(loader, desc="EVALUATING AT BEAM SIZE " + str(beam_size))):
+
+        # print("allcaps", allcaps)
 
         if ddd == 5000:
             break
@@ -163,6 +168,7 @@ def evaluate(args, beam_size, n_gram):
 
             # Set aside complete sequences
             if len(complete_inds) > 0:
+                # print("complete inds", len(complete_inds))
                 complete_seqs.extend(seqs[complete_inds].tolist())
                 complete_seqs_scores.extend(top_k_scores[complete_inds])
             k -= len(complete_inds)  # reduce beam length accordingly
@@ -186,11 +192,15 @@ def evaluate(args, beam_size, n_gram):
                 break
             step += 1
 
-        i = complete_seqs_scores.index(max(complete_seqs_scores))
-        seq = complete_seqs[i]
+        if len(complete_seqs) > 0:
+            i = complete_seqs_scores.index(max(complete_seqs_scores))
+            seq = complete_seqs[i]
+        else:
+            i = torch.argmax(top_k_scores)
+            seq = seqs[i]
 
         # References
-        img_caps = allcaps[0].tolist()
+        img_caps = allcaps[0].tolist()  # batch_size is 1
         img_captions = list(
             map(lambda c: [w for w in c if w not in [0, 1, 2]],
                 img_caps))  # remove <start> and pads
@@ -198,6 +208,9 @@ def evaluate(args, beam_size, n_gram):
 
         # Hypotheses
         temptemp = [w for w in seq if w not in [0, 1, 2]]
+
+        # print("Reference: ", [rev_word_map[i] for i in img_captions[0]])
+        # print("Hypothesis: ", [rev_word_map[i] for i in temptemp])
         hypotheses.append(temptemp)
 
     # Calculate BLEU-4 score
@@ -232,7 +245,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--data_folder', default='/workspace/workspace/image_captioning')
-    parser.add_argument('--checkpoint', default='BEST_checkpoint_3dcc_5_cap_per_img_0_min_word_freq.pth.tar')
+    parser.add_argument('--checkpoint',
+                        default='/workspace/workspace/image_captioning/BEST_checkpoint_iteration_5.0.pth.tar')
     parser.add_argument('--word_map_file', default='/workspace/workspace/image_captioning/word_map.json')
     parser.add_argument('--model_name', default='con-sub_too_r3')
 

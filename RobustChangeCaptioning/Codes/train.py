@@ -14,10 +14,10 @@ from nltk.translate.bleu_score import corpus_bleu  ##--
 import argparse
 
 # Data parameters
-data_name = '3dcc_5_cap_per_img_0_min_word_freq'
+data_name = 'iteration_3.1'
 
 # Model parameters
-embed_dim = 512
+embed_dim = 300
 decoder_dim = 512
 dropout = 0.1
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -32,8 +32,8 @@ epochs_since_improvement = 0
 batch_size = 32
 workers = 4
 net_lr = 1e-4
-decoder_lr = 1e-4
-encoder_lr = 1e-4
+decoder_lr = 4e-5
+encoder_lr = 4e-5
 grap_clip = 6.
 alpha_c = 1.
 best_bleu4 = 0.
@@ -54,6 +54,7 @@ def main(args):
         word_map = json.load(f)
 
     # Initialize
+
     encoder = DualAttention(attention_dim=args.attention_dim,
                             feature_dim=feature_dim).to(device)
 
@@ -65,13 +66,21 @@ def main(args):
 
     net = ImNet().to(device)
 
+    # pretrained = torch.load("/workspace/workspace/image_captioning/BEST_checkpoint_iteration_3_pretrained_015_0587.pth.pth.tar")
+    # encoder = pretrained["encoder"]
+    # decoder = pretrained["decoder"]
+    # net = pretrained["net"]
+
+    # for p in net.parameters():
+    #    p.required_grad = False
+
     net_optimizer = torch.optim.Adam(params=filter(lambda p: p.requires_grad, net.parameters()),
-                                     lr=net_lr)
+                                     lr=net_lr, weight_decay=1e-5)
     encoder_optimizer = torch.optim.Adam(params=filter(lambda p: p.requires_grad, decoder.parameters()),
-                                         lr=encoder_lr)
+                                         lr=encoder_lr, weight_decay=1e-5)
 
     decoder_optimizer = torch.optim.Adam(params=filter(lambda p: p.requires_grad, decoder.parameters()),
-                                         lr=decoder_lr)
+                                         lr=decoder_lr, weight_decay=1e-5)
 
     criterion = nn.CrossEntropyLoss().to(device)
 
@@ -80,7 +89,7 @@ def main(args):
         batch_size=batch_size, shuffle=False, num_workers=workers, pin_memory=True)
 
     val_loader = torch.utils.data.DataLoader(
-        CaptionDataset(args.data_folder, word_map, 'val'),
+        CaptionDataset(args.data_folder, word_map, 'test'),
         batch_size=1, shuffle=False, num_workers=workers, pin_memory=True)
 
     # Epochs
@@ -88,7 +97,7 @@ def main(args):
     for epoch in range(start_epoch, args.epochs):
         print("epoch : " + str(epoch))
 
-        if epochs_since_improvement > 0 and epochs_since_improvement % 8 == 0:
+        if epochs_since_improvement > 0 and epochs_since_improvement % 6 == 0:
             adjust_learning_rate(net_optimizer, 0.8)
             adjust_learning_rate(encoder_optimizer, 0.8)
             adjust_learning_rate(decoder_optimizer, 0.8)
@@ -305,7 +314,7 @@ if __name__ == '__main__':
 
     parser.add_argument('--data_folder', default='/workspace/workspace/image_captioning')
     parser.add_argument('--root_dir', default='./')
-    parser.add_argument('--epochs', type=int, default=42)
+    parser.add_argument('--epochs', type=int, default=100)
     parser.add_argument('--hidden_dim', type=int, default=512)
     parser.add_argument('--attention_dim', type=int, default=512)
 

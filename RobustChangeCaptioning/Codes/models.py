@@ -10,7 +10,7 @@ class ImNet(nn.Module):
 
     def __init__(self):
         super(ImNet, self).__init__()
-        model = models.resnet50(pretrained=True)
+        model = models.resnet101(pretrained=True)
         self.model = nn.Sequential(*list(model.children())[:-2])
         # print(self.model)
 
